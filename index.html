@@ -253,12 +253,12 @@
             }
         };
 
-        // --- HỆ THỐNG CHỮ BAY NÂNG CẤP ---
+        // --- HỆ THỐNG CHỮ BAY ĐÃ SỬA LỖI ĐỀU & TRÀN MÀN HÌNH ---
         const sky = document.getElementById('sky');
         const wishes = [
             "Chúc Thu Thủy luôn xinh đẹp", "Mãi yêu em", "Hạnh phúc", "Chúc Thu Thủy nhiều xiền", "Chúc đôi ta mãi có nhau",
-            "Love You Forever", "Xinh đẹp rạng ngời", "Yêu anh nhất", "Mãi bên nhau", "Cố lên nhé",
-            "Nhớ Thu Thủy rất nhiều", "Em là duy nhất", "Tương lai rạng ngời", "Nụ cười tỏa nắng",
+            "Love You Forever", "Xinh đẹp rạng ngời", "Yêu Thu Thủy nhất", "Mãi bên nhau", "Cố lên nhé",
+            "Nhớ Thu Thủy rất nhiều", "Em là duy nhất", "Thu Thủy Thu Thủy Thu Thủy Thu Thủy", "Nụ cười tỏa nắng",
             "Happy Valentine", "Sweet Love", "Always Together", "My Only One", "Người yêu anh là xinh nhất",
             "Công việc thăng tiến nhen", "Trọn đời bên nhau", "Cùng nhau già đi", "Everything will be OK",
             "You are my sunshine", "Thu Thủyyyyyyy", "Thành công vang dội", "Yêu Thu Thủyyyyyyyyyyy"
@@ -267,35 +267,36 @@
         function createWish() {
             const wish = document.createElement('div');
             wish.className = 'floating-wish';
-            // Lấy ngẫu nhiên lời chúc
             wish.innerText = wishes[Math.floor(Math.random() * wishes.length)];
 
-            // Random vị trí ngang (0 - 100vw)
-            wish.style.left = Math.random() * 100 + "vw";
+            // 1. CHỐNG TRÀN LỀ: Giới hạn vùng xuất hiện từ 5% đến 85% để chữ không bị cắt
+            const randomLeft = Math.random() * 80 + 5;
+            wish.style.left = randomLeft + "vw";
 
-            // Random tốc độ bay (từ 3 giây đến 8 giây)
-            const duration = Math.random() * 5 + 3;
+            // 2. TỐC ĐỘ: Cho bay chậm lại một chút để nhìn rõ lời chúc (4s - 9s)
+            const duration = Math.random() * 5 + 4;
             wish.style.animationDuration = duration + "s";
 
-            // Random kích thước chữ (từ 14px đến 26px)
-            const size = Math.random() * 12 + 14;
+            // 3. KÍCH THƯỚC: Trên mobile cho nhỏ lại một chút để không bị thô
+            const baseSize = window.innerWidth <= 600 ? 12 : 14;
+            const size = Math.random() * 10 + baseSize;
             wish.style.fontSize = size + "px";
 
-            // Random màu sắc hồng/trắng/vàng nhạt
+            // 4. MÀU SẮC & ĐỘ MỜ
             const colors = ['#ffffff', '#ffe5ec', '#ffb3c1', '#fb6f92', '#fff4d1'];
             wish.style.color = colors[Math.floor(Math.random() * colors.length)];
-
-            // Random độ mờ
-            wish.style.opacity = Math.random() * 0.5 + 0.4;
+            wish.style.opacity = Math.random() * 0.4 + 0.5;
 
             sky.appendChild(wish);
 
-            // Xóa chữ khi bay xong để nhẹ máy
             setTimeout(() => { wish.remove(); }, duration * 1000);
         }
 
-        // Tăng tốc độ tạo chữ: Cứ 100ms (0.1 giây) tạo 1 chữ mới
-        setInterval(createWish, 100);
+        // 5. ĐIỀU CHỈNH MẬT ĐỘ: 
+        // Trên PC: 150ms một chữ (Dày)
+        // Trên Mobile: 300ms một chữ (Đều, đẹp, không rối)
+        const spawnRate = window.innerWidth <= 600 ? 300 : 150;
+        setInterval(createWish, spawnRate);
     </script>
 </body>
 
