@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiệp Tình Yêu 2026 - Rực Rỡ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@500&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pink-main: #ff4d6d;
+            --pink-light: #ff85a1;
+            --pink-bg: #fff0f3;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8adff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 2000px;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        /* KHÔNG GIAN CHỮ BAY */
+        #sky {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .floating-wish {
+            position: absolute;
+            white-space: nowrap;
+            font-weight: bold;
+            pointer-events: none;
+            animation: fly linear forwards;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+            z-index: 1;
+        }
+
+        @keyframes fly {
+            0% {
+                transform: translateY(110vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.9;
+            }
+
+            90% {
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: translateY(-20vh) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        /* THIỆP 3D */
+        .card {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.8s ease;
+            z-index: 10;
+        }
+
+        @media (min-width: 601px) {
+            .card.open {
+                transform: translateX(150px);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                width: 280px;
+                height: 380px;
+            }
+        }
+
+        .cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-origin: left;
+            transform-style: preserve-3d;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        .card.open .cover {
+            transform: rotateY(-180deg);
+        }
+
+        /* Hiệu ứng biến mất bìa khi mở trên Mobile */
+        .cover.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .card-page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            backface-visibility: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .front {
+            background: linear-gradient(45deg, var(--pink-main), var(--pink-light));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid white;
+            z-index: 2;
+        }
+
+        .back-face {
+            background-color: #fff;
+            transform: rotateY(180deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid white;
+            z-index: 1;
+        }
+
+        .front-content {
+            width: 85%;
+            height: 85%;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed var(--pink-main);
+        }
+
+        .inside {
+            background-color: white;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            border: 5px solid var(--pink-main);
+        }
+
+        .inside-content {
+            color: var(--pink-main);
+            text-align: center;
+        }
+
+        .heart-animation {
+            font-size: 35px;
+            animation: beat 1s infinite;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        @keyframes beat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: -50px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .hidden {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sky"></div>
+
+    <div class="card" id="myCard">
+        <div class="cover" id="cardCover">
+            <div class="card-page front">
+                <div class="front-content">
+                    <div style="font-size: 50px;">💝</div>
+                    <h1 style="font-family: 'Dancing Script'; color: var(--pink-main);">Valentine's</h1>
+                    <p style="color: var(--pink-light);">Bấm để mở lời yêu</p>
+                </div>
+            </div>
+            <div class="card-page back-face">
+                <div style="font-size: 80px; opacity: 0.1;">❤️</div>
+            </div>
+        </div>
+
+        <div class="card-page inside">
+            <div class="inside-content">
+                <h2 style="font-family: 'Dancing Script'; font-size: 28px;">Gửi Thu Thủy yêu dấu!</h2>
+                <p>Chúc Thủy của anh luôn vui vẻ, hạnh phúc và hãy luôn giữ nụ cười rạng rỡ nhé</p>
+                <div class="heart-animation">❤️</div>
+                <p style="font-weight: bold; font-style: italic;">Anh yêu em!</p>
+            </div>
+        </div>
+        <div class="instruction">Chạm vào thiệp đi mà!</div>
+    </div>
+
+    <script>
+        const myCard = document.getElementById('myCard');
+        const cardCover = document.getElementById('cardCover');
+        const instruction = document.querySelector('.instruction');
+
+        myCard.onclick = function () {
+            if (!this.classList.contains('open')) {
+                this.classList.add('open');
+                instruction.classList.add('hidden');
+                if (window.innerWidth <= 600) {
+                    setTimeout(() => { cardCover.classList.add('fade-out'); }, 1000);
+                }
+            } else {
+                this.classList.remove('open');
+                cardCover.classList.remove('fade-out');
+                instruction.classList.remove('hidden');
+            }
+        };
+
+        // --- HỆ THỐNG CHỮ BAY NÂNG CẤP ---
+        const sky = document.getElementById('sky');
+        const wishes = [
+            "Chúc Thu Thủy luôn xinh đẹp", "Mãi yêu em", "Hạnh phúc", "Chúc Thu Thủy nhiều xiền", "Chúc đôi ta mãi có nhau",
+            "Love You Forever", "Xinh đẹp rạng ngời", "Yêu anh nhất", "Mãi bên nhau", "Cố lên nhé",
+            "Nhớ Thu Thủy rất nhiều", "Em là duy nhất", "Tương lai rạng ngời", "Nụ cười tỏa nắng",
+            "Happy Valentine", "Sweet Love", "Always Together", "My Only One", "Người yêu anh là xinh nhất",
+            "Công việc thăng tiến nhen", "Trọn đời bên nhau", "Cùng nhau già đi", "Everything will be OK",
+            "You are my sunshine", "Thu Thủyyyyyyy", "Thành công vang dội", "Yêu Thu Thủyyyyyyyyyyy"
+        ];
+
+        function createWish() {
+            const wish = document.createElement('div');
+            wish.className = 'floating-wish';
+            // Lấy ngẫu nhiên lời chúc
+            wish.innerText = wishes[Math.floor(Math.random() * wishes.length)];
+
+            // Random vị trí ngang (0 - 100vw)
+            wish.style.left = Math.random() * 100 + "vw";
+
+            // Random tốc độ bay (từ 3 giây đến 8 giây)
+            const duration = Math.random() * 5 + 3;
+            wish.style.animationDuration = duration + "s";
+
+            // Random kích thước chữ (từ 14px đến 26px)
+            const size = Math.random() * 12 + 14;
+            wish.style.fontSize = size + "px";
+
+            // Random màu sắc hồng/trắng/vàng nhạt
+            const colors = ['#ffffff', '#ffe5ec', '#ffb3c1', '#fb6f92', '#fff4d1'];
+            wish.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+            // Random độ mờ
+            wish.style.opacity = Math.random() * 0.5 + 0.4;
+
+            sky.appendChild(wish);
+
+            // Xóa chữ khi bay xong để nhẹ máy
+            setTimeout(() => { wish.remove(); }, duration * 1000);
+        }
+
+        // Tăng tốc độ tạo chữ: Cứ 100ms (0.1 giây) tạo 1 chữ mới
+        setInterval(createWish, 100);
+    </script>
+</body>
+
+</html>
