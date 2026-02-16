@@ -216,6 +216,80 @@
             white-space: pre;
         }
 
+        /* Ready Note */
+        #readyNote {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: 600;
+            color: #feca57;
+            text-shadow: 0 0 20px rgba(254, 202, 87, 0.8),
+                0 0 30px rgba(254, 202, 87, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            z-index: 101;
+            max-width: 90%;
+            padding: 20px;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        #readyNote.show {
+            opacity: 1;
+            animation: pulseBright 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseBright {
+
+            0%,
+            100% {
+                text-shadow: 0 0 20px rgba(254, 202, 87, 0.8),
+                    0 0 30px rgba(254, 202, 87, 0.6),
+                    2px 2px 4px rgba(0, 0, 0, 0.8);
+            }
+
+            50% {
+                text-shadow: 0 0 30px rgba(254, 202, 87, 1),
+                    0 0 50px rgba(254, 202, 87, 0.8),
+                    2px 2px 6px rgba(0, 0, 0, 0.9);
+            }
+        }
+
+        /* Ready Prompt */
+        #readyPrompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #4ecdc4;
+            text-shadow: 0 0 30px rgba(78, 205, 196, 0.9),
+                0 0 50px rgba(78, 205, 196, 0.7),
+                3px 3px 6px rgba(0, 0, 0, 0.9);
+            text-align: center;
+            z-index: 101;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #readyPrompt.show {
+            opacity: 1;
+            animation: scaleUp 0.5s ease-out;
+        }
+
+        @keyframes scaleUp {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
         /* Firework particles */
         .firework-particle {
             position: absolute;
@@ -765,8 +839,11 @@
 
 <body>
     <canvas id="canvas"></canvas>
+    <div id="message">Cả bầu trời dành cho Thu Thủy</div>
 
     <div id="introText"></div>
+    <div id="readyNote">👆 Em hãy bấm vào màn hình để bắt đầu nhé 👆</div>
+    <div id="readyPrompt">Sẵn sàng chưa? 🎆</div>
     <div id="countdown"></div>
     <button id="startButton">🎆 Bắt Đầu 🎆</button>
 
@@ -886,6 +963,65 @@
 
             noise.start(audioContext.currentTime);
             noise.stop(audioContext.currentTime + 0.4);
+        }
+
+        function playBigExplosionSound() {
+            if (!audioUnlocked) return;
+
+            // MUCH LOUDER explosion for text firework
+            const frequencies = [80, 120, 180, 240, 320];
+            const duration = 0.8; // Longer duration
+
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+
+                oscillator.type = 'sawtooth';
+                filter.type = 'lowpass';
+                filter.frequency.value = 2500;
+
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(40, audioContext.currentTime + duration);
+
+                gainNode.gain.setValueAtTime(0.4, audioContext.currentTime); // Double volume!
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                const startTime = audioContext.currentTime + (index * 0.03);
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            });
+
+            // Louder white noise
+            const bufferSize = audioContext.sampleRate * 0.8;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioContext.createBufferSource();
+            const noiseGain = audioContext.createGain();
+            const noiseFilter = audioContext.createBiquadFilter();
+
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 1000;
+
+            noise.buffer = buffer;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioContext.destination);
+
+            noiseGain.gain.setValueAtTime(0.3, audioContext.currentTime); // Double volume!
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+
+            noise.start(audioContext.currentTime);
+            noise.stop(audioContext.currentTime + 0.6);
         }
 
         function playWishSound() {
@@ -1057,13 +1193,24 @@
 
         // Rocket (firework before explosion)
         class Rocket {
-            constructor(x, targetY, color, shape) {
+            constructor(x, targetY, color, shape, text = null) {
                 this.x = x;
                 this.y = canvas.height;
                 this.targetY = targetY;
                 this.color = color;
                 this.shape = shape;
-                this.vy = -12; // Increased initial upward velocity for higher launch
+                this.text = text; // Text for explosion
+
+                // Slow mode for text firework
+                if (this.text) {
+                    // SLOW and STEADY velocity - takes ~3 seconds to reach top
+                    this.vy = -4; // Slow constant velocity
+                    this.gravity = 0; // NO gravity - constant speed!
+                } else {
+                    this.vy = -12; // Normal fast velocity
+                    this.gravity = 0.15; // Normal gravity
+                }
+
                 this.trail = [];
                 this.exploded = false;
 
@@ -1074,7 +1221,7 @@
             update() {
                 if (!this.exploded) {
                     this.y += this.vy;
-                    this.vy += 0.15; // gravity slows it down
+                    this.vy += this.gravity; // Apply appropriate gravity
 
                     // Create trail
                     if (Math.random() > 0.6) {
@@ -1090,8 +1237,13 @@
                     // Check if reached target height
                     if (this.y <= this.targetY || this.vy > 0) {
                         this.exploded = true;
-                        playExplosionSound(); // Play explosion sound
-                        return new Explosion(this.x, this.y, this.color, this.shape);
+                        // Play appropriate explosion sound
+                        if (this.text) {
+                            playBigExplosionSound(); // Louder sound for text
+                        } else {
+                            playExplosionSound(); // Normal sound for regular fireworks
+                        }
+                        return new Explosion(this.x, this.y, this.color, this.shape, this.text);
                     }
                 }
 
@@ -1141,11 +1293,65 @@
             }
 
             update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += this.gravity; // Much lighter gravity
-                this.vx *= 0.995; // Less air resistance (was 0.98)
-                this.life -= 0.003; // Much slower fade (was 0.006)
+                // Text particle with morph effect
+                if (this.isTextParticle && this.morphStartTime) {
+                    const now = Date.now();
+                    const elapsed = (now - this.startTime) / 1000;
+
+                    // Phase 1: Explosion (0-0.5s) - particles fly out
+                    if (now < this.morphStartTime) {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.vy += 0.03; // Light gravity during explosion
+                        this.vx *= 0.98; // Slow down
+                        this.vy *= 0.98;
+                    }
+                    // Phase 2: Morph to text (0.5-1.5s) - 1 second morph
+                    else if (elapsed < 1.5) {
+                        const morphProgress = (elapsed - 0.5) / 1; // 0 to 1 over 1 second
+
+                        // Lerp (linear interpolation) to final position
+                        const currentX = this.x;
+                        const currentY = this.y;
+                        const targetX = this.finalX;
+                        const targetY = this.finalY;
+
+                        // Move towards target position
+                        this.x = currentX + (targetX - currentX) * 0.1; // 10% closer each frame
+                        this.y = currentY + (targetY - currentY) * 0.1;
+
+                        // Slow down velocity
+                        this.vx *= 0.9;
+                        this.vy *= 0.9;
+
+                        // Fade in as particles form text
+                        this.fadeOpacity = Math.min(1, morphProgress);
+                    }
+                    // Phase 3: Hold as text (1.5-4.5s) - 3 seconds
+                    else if (elapsed < 4.5) {
+                        // Snap to final position
+                        this.x = this.finalX;
+                        this.y = this.finalY;
+                        this.vx = 0;
+                        this.vy = 0;
+                        this.fadeOpacity = 1;
+                    }
+                    // Phase 4: Fall (4.5-8s)
+                    else {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.vy += 0.05; // Gravity
+                        this.fadeOpacity = 1;
+                    }
+                } else {
+                    // Normal particle
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                }
+
+                this.vx *= 0.995;
+                this.life -= 0.002; // Slower fade for text particles
 
                 // Create trailing sparks randomly
                 if (this.life > 0.5 && Math.random() > 0.85) {
@@ -1154,7 +1360,7 @@
                         y: this.y,
                         vx: this.vx * 0.3 + (Math.random() - 0.5) * 0.5,
                         vy: this.vy * 0.3 + Math.random() * 0.5,
-                        life: 0.8, // Longer spark life
+                        life: 0.8,
                         color: this.color
                     });
                 }
@@ -1163,20 +1369,29 @@
                 this.sparks.forEach(spark => {
                     spark.x += spark.vx;
                     spark.y += spark.vy;
-                    spark.vy += 0.05; // Less gravity on sparks
-                    spark.life -= 0.015; // Slower fade
+                    spark.vy += 0.05;
+                    spark.life -= 0.015;
                 });
 
-                // Remove dead sparks
                 this.sparks = this.sparks.filter(s => s.life > 0);
             }
 
             draw() {
+                // Calculate opacity for text particles with fade in
+                let opacity;
+                if (this.fadeOpacity !== undefined) {
+                    // Text particle: use fade opacity and life
+                    opacity = Math.min(this.fadeOpacity, this.life);
+                } else {
+                    // Normal particle: use life only
+                    opacity = Math.min(this.life, 1);
+                }
+
                 // Draw main particle
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
-                ctx.globalAlpha = Math.min(this.life, 1); // Cap at 1 for opacity
+                ctx.globalAlpha = opacity;
                 ctx.fill();
 
                 // Add glow effect
@@ -1206,16 +1421,23 @@
 
         // Explosion class
         class Explosion {
-            constructor(x, y, color, shape) {
+            constructor(x, y, color, shape, text = null) {
                 this.x = x;
                 this.y = y;
                 this.color = color;
                 this.shape = shape;
+                this.text = text; // Text to display
                 this.particles = [];
                 this.createExplosion();
             }
 
             createExplosion() {
+                // If text is provided, create text shape
+                if (this.text) {
+                    this.createTextShape(this.text);
+                    return;
+                }
+
                 const colors = this.generateColors(this.color);
 
                 switch (this.shape) {
@@ -1239,6 +1461,94 @@
                         break;
                     default:
                         this.createCircle(colors);
+                }
+            }
+
+            createTextShape(text) {
+                // Create particles that form text
+                // We'll use canvas to measure text and create particles
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+
+                // Responsive font size with proper margins
+                const isMobile = canvas.width < 768;
+                const textLength = text.length;
+
+                // Calculate available width (minus margins)
+                const marginPC = 200; // 100px each side for PC
+                const marginMobile = 40; // 20px each side for mobile
+                const availableWidth = isMobile
+                    ? canvas.width - marginMobile
+                    : canvas.width - marginPC;
+
+                // Calculate font size to fit within available width
+                let fontSize;
+                if (isMobile) {
+                    // Mobile: smaller font, fit to available width
+                    fontSize = Math.max(12, Math.min(24, availableWidth / textLength * 1.5));
+                } else {
+                    // Desktop: moderate font, fit to available width
+                    fontSize = Math.max(18, Math.min(36, availableWidth / textLength * 1.5));
+                }
+
+                tempCtx.font = `bold ${fontSize}px Arial`;
+
+                const metrics = tempCtx.measureText(text);
+                const textWidth = metrics.width;
+                const textHeight = fontSize;
+
+                tempCanvas.width = textWidth + 20;
+                tempCanvas.height = textHeight + 20;
+
+                // Draw text on temp canvas
+                tempCtx.font = `bold ${fontSize}px Arial`;
+                tempCtx.fillStyle = 'white';
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'middle';
+                tempCtx.fillText(text, tempCanvas.width / 2, tempCanvas.height / 2);
+
+                // Get pixel data
+                const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                const pixels = imageData.data;
+
+                // MUCH DENSER sampling - 3x more particles!
+                const sampleRate = Math.max(1, Math.floor(fontSize / 18));
+                const scale = isMobile ? 1.2 : 1.5; // Smaller scale
+
+                for (let y = 0; y < tempCanvas.height; y += sampleRate) {
+                    for (let x = 0; x < tempCanvas.width; x += sampleRate) {
+                        const index = (y * tempCanvas.width + x) * 4;
+                        const alpha = pixels[index + 3];
+
+                        if (alpha > 128) { // If pixel is visible
+                            // Calculate FINAL position (where particle should end up)
+                            const finalOffsetX = (x - tempCanvas.width / 2) * scale;
+                            const finalOffsetY = (y - tempCanvas.height / 2) * scale;
+
+                            // Calculate RANDOM initial explosion direction
+                            const angle = Math.random() * Math.PI * 2;
+                            const speed = 2 + Math.random() * 3; // Random speed for explosion
+
+                            const particle = new ExplosionParticle(
+                                this.x,
+                                this.y,
+                                angle, // Explode in all directions!
+                                speed,
+                                this.color
+                            );
+
+                            // Store final position for morphing into text
+                            particle.finalX = this.x + finalOffsetX;
+                            particle.finalY = this.y + finalOffsetY;
+                            particle.isTextParticle = true;
+                            particle.life = 8; // Longer life
+                            particle.radius = Math.max(1.2, fontSize / 24); // Smaller particles
+                            particle.startTime = Date.now();
+                            particle.morphStartTime = Date.now() + 500; // Start morphing after 0.5s explosion
+
+                            this.particles.push(particle);
+                        }
+                    }
                 }
             }
 
@@ -1345,7 +1655,7 @@
         let explosions = [];
         let isFireworkActive = false;
 
-        function launchFirework() {
+        function launchFirework(text = null) {
             const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8', '#00d2d3', '#ff9ff3', '#feca57'];
             const shapes = ['circle', 'ring', 'heart', 'star', 'willow', 'palm'];
 
@@ -1354,9 +1664,9 @@
             const x = canvas.width / 2 + (Math.random() - 0.5) * xVariation;
             const targetY = canvas.height * 0.1 + Math.random() * canvas.height * 0.25; // Explode higher: 10-35% from top
             const color = colors[Math.floor(Math.random() * colors.length)];
-            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            const shape = text ? 'text' : shapes[Math.floor(Math.random() * shapes.length)];
 
-            rockets.push(new Rocket(x, targetY, color, shape));
+            rockets.push(new Rocket(x, targetY, color, shape, text));
         }
 
         // Wishes array - thêm nhiều lời chúc và emoji trái tim
@@ -1561,6 +1871,8 @@
         // Start intro text animation on page load
         window.addEventListener('load', () => {
             const introText = document.getElementById('introText');
+            const readyNote = document.getElementById('readyNote');
+            const readyPrompt = document.getElementById('readyPrompt');
             const countdownElement = document.getElementById('countdown');
             const message = "Thu Thủy yêu dấu, năm nay anh chưa thể cùng em ngắm pháo hoa được nên anh làm một bầu trời pháo hoa tặng em nhé....";
 
@@ -1569,7 +1881,7 @@
 
             // Start typing intro
             typeIntro(introText, message, 80).then(() => {
-                // After intro finishes, wait 2 seconds then start countdown
+                // After intro finishes, wait 1 second then show ready note
                 setTimeout(() => {
                     introText.style.transition = 'opacity 1s';
                     introText.style.opacity = '0';
@@ -1577,10 +1889,38 @@
                     setTimeout(() => {
                         introText.style.display = 'none';
 
-                        // Start countdown 3, 2, 1
-                        startCountdown(countdownElement);
+                        // Show ready note
+                        readyNote.classList.add('show');
+
+                        // Wait for user to click/touch anywhere
+                        const handleUserReady = () => {
+                            // Remove listeners
+                            canvas.removeEventListener('click', handleUserReady);
+                            canvas.removeEventListener('touchstart', handleUserReady);
+
+                            // Hide ready note
+                            readyNote.classList.remove('show');
+
+                            // Show "Sẵn sàng chưa?"
+                            setTimeout(() => {
+                                readyPrompt.classList.add('show');
+
+                                // After 1.5 seconds, start countdown
+                                setTimeout(() => {
+                                    readyPrompt.classList.remove('show');
+
+                                    setTimeout(() => {
+                                        readyPrompt.style.display = 'none';
+                                        startCountdown(countdownElement);
+                                    }, 300);
+                                }, 1500);
+                            }, 300);
+                        };
+
+                        canvas.addEventListener('click', handleUserReady);
+                        canvas.addEventListener('touchstart', handleUserReady);
                     }, 1000);
-                }, 2000);
+                }, 1000);
             });
         });
 
@@ -1660,45 +2000,64 @@
 
             setTimeout(() => {
                 clearInterval(fireworkInterval);
-                isFireworkActive = false;
 
-                // Wait for remaining fireworks to finish
+                // GRAND FINALE: 1 giant text firework "Đình Việt Yêu Thu Thủy"
+                // Wait 2 seconds after last regular firework
                 setTimeout(() => {
-                    rockets = [];
-                    explosions = [];
+                    const fullText = 'Đình Việt Yêu Thu Thủy';
+                    const color = '#ff69b4'; // Pink
 
-                    // Phase 2: Show wishes scattered all over screen
-                    const wishInterval = setInterval(() => {
-                        showMultipleWishes(); // Show 1 wish at a time
-                    }, 400); // Every 0.4 seconds - faster since only 1 wish now
+                    const isMobile = canvas.width < 768;
 
+                    // Launch 1 BIG text firework in the center
+                    const x = canvas.width * 0.5;
+                    const y = isMobile ? canvas.height * 0.35 : canvas.height * 0.3;
+
+                    rockets.push(new Rocket(x, y, color, 'text', fullText));
+                }, 2000); // 2 second delay!
+
+                // Wait longer for finale to finish
+                setTimeout(() => {
+                    isFireworkActive = false;
+
+                    // Wait for remaining fireworks to finish (increased from 5000 to 10000)
                     setTimeout(() => {
-                        clearInterval(wishInterval);
+                        rockets = [];
+                        explosions = [];
 
-                        // Phase 3: Show greeting card after 2 seconds (let wishes fade)
+                        // Phase 2: Show wishes scattered all over screen
+                        const wishInterval = setInterval(() => {
+                            showMultipleWishes(); // Show 1 wish at a time
+                        }, 400); // Every 0.4 seconds - faster since only 1 wish now
+
                         setTimeout(() => {
-                            playCardSound(); // Play magical sound
-                            greetingCard.classList.add('show');
+                            clearInterval(wishInterval);
 
-                            // Start typewriter effect after card appears
+                            // Phase 3: Show greeting card after 2 seconds (let wishes fade)
                             setTimeout(() => {
-                                const content = "Em yêu của anh,\n\nNăm mới đến rồi, anh chúc em luôn tràn đầy niềm vui và hạnh phúc.\nChúc em thành công trong sự nghiệp, mọi ước mơ đều thành hiện thực.\nChúc sức khỏe luôn dồi dào, nụ cười luôn tươi tắn trên môi.\nVà quan trọng nhất, chúc tình yêu của chúng mình ngày càng bền chặt,\nvượt qua mọi sóng gió để đến bến bờ hạnh phúc.\n\nAnh yêu em nhiều lắm! ❤️";
-                                const signature = "- Việt của Thủyyyy -";
+                                playCardSound(); // Play magical sound
+                                greetingCard.classList.add('show');
 
-                                const contentElement = document.querySelector('#cardContent .typewriter');
-                                const signatureElement = document.getElementById('cardSignature');
-
-                                // Type content first
-                                typeWriter(contentElement, content, 40);
-
-                                // Type signature after content finishes
+                                // Start typewriter effect after card appears
                                 setTimeout(() => {
-                                    typeWriter(signatureElement, signature, 60);
-                                }, content.length * 40 + 500);
-                            }, 500);
-                        }, 2000);
-                    }, 20000); // 20 seconds of wishes
-                }, 3000);
+                                    const content = "Em yêu của anh,\n\nNăm mới đến rồi, anh chúc em luôn tràn đầy niềm vui và hạnh phúc.\nChúc em thành công trong sự nghiệp, mọi ước mơ đều thành hiện thực.\nChúc sức khỏe luôn dồi dào, nụ cười luôn tươi tắn trên môi.\nVà quan trọng nhất, chúc tình yêu của chúng mình ngày càng bền chặt,\nvượt qua mọi sóng gió để đến bến bờ hạnh phúc.\n\nAnh yêu em nhiều lắm! ❤️";
+                                    const signature = "- Người yêu em -";
+
+                                    const contentElement = document.querySelector('#cardContent .typewriter');
+                                    const signatureElement = document.getElementById('cardSignature');
+
+                                    // Type content first
+                                    typeWriter(contentElement, content, 40);
+
+                                    // Type signature after content finishes
+                                    setTimeout(() => {
+                                        typeWriter(signatureElement, signature, 60);
+                                    }, content.length * 40 + 500);
+                                }, 500);
+                            }, 2000);
+                        }, 20000); // 20 seconds of wishes
+                    }, 10000); // Wait 10 seconds for text fireworks to fade
+                }, 6000); // Wait 6 seconds before clearing
             }, fireworkDuration);
         }
 
