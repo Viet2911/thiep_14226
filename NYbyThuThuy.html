@@ -765,6 +765,7 @@
 
 <body>
     <canvas id="canvas"></canvas>
+    <div id="message">Cả bầu trời lời chúc nhân dịp năm mới cho người yêu</div>
 
     <div id="introText"></div>
     <div id="countdown"></div>
@@ -773,7 +774,7 @@
     <div id="greetingCard">
         <button id="closeCard">×</button>
         <div class="decoration">🎉✨🎊</div>
-        <h1 id="cardTitle">Chúc Mừng Năm Mới 2026!</h1>
+        <h1 id="cardTitle">Chúc Mừng Năm Mới 2025!</h1>
         <p id="cardContent">
             <span class="typewriter"></span>
         </p>
@@ -795,10 +796,24 @@
         const closeCard = document.getElementById('closeCard');
 
         // Audio Context for sound effects
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let audioContext;
+        let audioUnlocked = false;
+
+        // Initialize audio context after user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            audioUnlocked = true;
+        }
 
         // Sound effect functions
         function playLaunchSound() {
+            if (!audioUnlocked) return;
+
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
@@ -816,6 +831,8 @@
         }
 
         function playExplosionSound() {
+            if (!audioUnlocked) return;
+
             // Create a more complex explosion sound with multiple frequencies
             const frequencies = [100, 150, 200, 250, 300];
             const duration = 0.5;
@@ -873,6 +890,8 @@
         }
 
         function playWishSound() {
+            if (!audioUnlocked) return;
+
             // Gentle chime sound for wishes
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -892,6 +911,8 @@
         }
 
         function playCardSound() {
+            if (!audioUnlocked) return;
+
             // Magical sound for card appearance
             const frequencies = [523, 659, 784, 1047]; // C, E, G, C (major chord)
 
@@ -1363,7 +1384,7 @@
             "☀️ Chúc ngày nào cũng rạng rỡ!",
             "2026 năm thật thành công! 💖",
             "Năm mới may mắn gặp nhiều điều tốt 💕",
-            "Anh yêu Thu Thủy rất nhiều 🎊",
+            "Happy New Year 2026 🎊",
             "Chúc anh năm mới hạnh phúc 💝",
             "2026 mãi yêu em! 💗",
             "Năm mới vui vẻ! 💖"
@@ -1524,11 +1545,28 @@
             });
         }
 
+        let introStarted = false;
+
+        // Unlock audio on any user interaction
+        function unlockAudio() {
+            if (!audioUnlocked) {
+                initAudio();
+            }
+        }
+
+        // Add listeners for user interaction
+        document.addEventListener('click', unlockAudio, { once: false });
+        document.addEventListener('touchstart', unlockAudio, { once: false });
+        document.addEventListener('keydown', unlockAudio, { once: false });
+
         // Start intro text animation on page load
         window.addEventListener('load', () => {
             const introText = document.getElementById('introText');
             const countdownElement = document.getElementById('countdown');
             const message = "Thu Thủy yêu dấu, năm nay anh chưa thể cùng em ngắm pháo hoa được nên anh làm một bầu trời pháo hoa tặng em nhé....";
+
+            if (introStarted) return;
+            introStarted = true;
 
             // Start typing intro
             typeIntro(introText, message, 80).then(() => {
@@ -1590,6 +1628,8 @@
 
         // Countdown sound
         function playCountdownSound() {
+            if (!audioUnlocked) return;
+
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
@@ -1607,11 +1647,6 @@
 
         // Start fireworks (extracted from button click)
         function startFireworks() {
-            // Resume audio context
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-
             // Phase 1: Fireworks for 30-45 seconds (randomly choose duration)
             const fireworkDuration = 30000 + Math.random() * 15000; // 30-45 seconds
             isFireworkActive = true;
@@ -1649,7 +1684,7 @@
                             // Start typewriter effect after card appears
                             setTimeout(() => {
                                 const content = "Em yêu của anh,\n\nNăm mới đến rồi, anh chúc em luôn tràn đầy niềm vui và hạnh phúc.\nChúc em thành công trong sự nghiệp, mọi ước mơ đều thành hiện thực.\nChúc sức khỏe luôn dồi dào, nụ cười luôn tươi tắn trên môi.\nVà quan trọng nhất, chúc tình yêu của chúng mình ngày càng bền chặt,\nvượt qua mọi sóng gió để đến bến bờ hạnh phúc.\n\nAnh yêu em nhiều lắm! ❤️";
-                                const signature = "- Việt của Thu Thủy -";
+                                const signature = "- Người yêu em -";
 
                                 const contentElement = document.querySelector('#cardContent .typewriter');
                                 const signatureElement = document.getElementById('cardSignature');
