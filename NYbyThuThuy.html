@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bầu Trời Lời Chúc</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            cursor: crosshair;
+        }
+
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #0a1929 0%, #1a3a52 50%, #2d5f7a 100%);
+        }
+
+        #message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            z-index: 10;
+            max-width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 30px;
+            color: #ff4757;
+            pointer-events: none;
+            animation: floatUp 3s ease-out forwards;
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-150px) scale(1.2);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-300px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Custom cursor */
+        body {
+            cursor: none;
+        }
+
+        #customCursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .cursor-line {
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        .cursor-line.horizontal {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor-line.vertical {
+            width: 2px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Start Button */
+        #startButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 50px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+            animation: pulse 2s infinite;
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+
+        #startButton.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #startButton:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 10px 50px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        /* Countdown */
+        #countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 120px;
+            font-weight: bold;
+            color: #ff69b4;
+            text-shadow: 0 0 30px rgba(255, 105, 180, 1),
+                0 0 60px rgba(255, 105, 180, 0.8),
+                0 0 90px rgba(255, 105, 180, 0.6),
+                4px 4px 8px rgba(0, 0, 0, 0.9);
+            z-index: 101;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        #countdown.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            animation: countdownPulse 1s ease-in-out;
+        }
+
+        @keyframes countdownPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Intro Text */
+        #introText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 600;
+            color: #ff69b4;
+            text-shadow: 0 0 20px rgba(255, 105, 180, 0.8),
+                0 0 30px rgba(255, 105, 180, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            z-index: 101;
+            max-width: 90%;
+            line-height: 1.6;
+            padding: 20px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        #introText .intro-char {
+            opacity: 0;
+            display: inline-block;
+            animation: fadeInChar 0.1s ease-in forwards;
+            white-space: pre;
+        }
+
+        /* Firework particles */
+        .firework-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Wishes text - with 3D depth layers */
+        .wish-text {
+            position: absolute;
+            font-weight: 700;
+            color: #ff69b4;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 50;
+            letter-spacing: 0.5px;
+            /* Hardware acceleration for smoother animation */
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layer 1 - Closest (largest, brightest) */
+        .wish-text.layer-1 {
+            font-size: 22px;
+            text-shadow: 0 0 18px rgba(255, 105, 180, 0.9),
+                2px 2px 5px rgba(0, 0, 0, 0.9);
+            opacity: 1;
+            animation: floatUpLayer1 5s linear forwards;
+        }
+
+        /* Layer 2 - Close */
+        .wish-text.layer-2 {
+            font-size: 18px;
+            text-shadow: 0 0 14px rgba(255, 105, 180, 0.75),
+                2px 2px 4px rgba(0, 0, 0, 0.8);
+            opacity: 0.9;
+            animation: floatUpLayer2 6s linear forwards;
+        }
+
+        /* Layer 3 - Medium distance */
+        .wish-text.layer-3 {
+            font-size: 15px;
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.6),
+                1px 1px 3px rgba(0, 0, 0, 0.7);
+            opacity: 0.75;
+            animation: floatUpLayer3 7s linear forwards;
+        }
+
+        /* Layer 4 - Far */
+        .wish-text.layer-4 {
+            font-size: 12px;
+            text-shadow: 0 0 7px rgba(255, 105, 180, 0.5),
+                1px 1px 2px rgba(0, 0, 0, 0.6);
+            opacity: 0.6;
+            filter: blur(0.3px);
+            animation: floatUpLayer4 8s linear forwards;
+        }
+
+        /* Layer 5 - Farthest (smallest, most transparent) */
+        .wish-text.layer-5 {
+            font-size: 10px;
+            text-shadow: 0 0 5px rgba(255, 105, 180, 0.4),
+                1px 1px 2px rgba(0, 0, 0, 0.5);
+            opacity: 0.45;
+            filter: blur(0.5px);
+            animation: floatUpLayer5 9s linear forwards;
+        }
+
+        @keyframes floatUpLayer1 {
+            0% {
+                transform: translate3d(0, 50px, 0) scale(0.8);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate3d(0, -100vh, 0) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes floatUpLayer2 {
+            0% {
+                transform: translate3d(0, 50px, 0) scale(0.75);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.9;
+            }
+
+            90% {
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: translate3d(0, -100vh, 0) scale(0.95);
+                opacity: 0;
+            }
+        }
+
+        @keyframes floatUpLayer3 {
+            0% {
+                transform: translate3d(0, 50px, 0) scale(0.7);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.75;
+            }
+
+            90% {
+                opacity: 0.75;
+            }
+
+            100% {
+                transform: translate3d(0, -100vh, 0) scale(0.9);
+                opacity: 0;
+            }
+        }
+
+        @keyframes floatUpLayer4 {
+            0% {
+                transform: translate3d(0, 50px, 0) scale(0.65);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translate3d(0, -100vh, 0) scale(0.85);
+                opacity: 0;
+            }
+        }
+
+        @keyframes floatUpLayer5 {
+            0% {
+                transform: translate3d(0, 50px, 0) scale(0.6);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.45;
+            }
+
+            90% {
+                opacity: 0.45;
+            }
+
+            100% {
+                transform: translate3d(0, -100vh, 0) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* Card */
+        #greetingCard {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 90%;
+            max-width: 600px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 200;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        #greetingCard.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        #greetingCard h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        #greetingCard p {
+            color: #333;
+            line-height: 1.8;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* Typewriter effect for card content */
+        #greetingCard .typewriter {
+            overflow: hidden;
+            display: inline;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        #greetingCard .typewriter-char {
+            opacity: 0;
+            animation: fadeInChar 0.1s ease-in forwards;
+            display: inline-block;
+            white-space: pre;
+        }
+
+        @keyframes fadeInChar {
+            to {
+                opacity: 1;
+            }
+        }
+
+        #greetingCard .signature {
+            text-align: right;
+            font-style: italic;
+            color: #667eea;
+            margin-top: 30px;
+            font-size: 20px;
+        }
+
+        #greetingCard .decoration {
+            text-align: center;
+            font-size: 40px;
+            margin: 20px 0;
+        }
+
+        #closeCard {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 35px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        #closeCard:hover {
+            background: #ff3838;
+            transform: rotate(90deg);
+        }
+
+        /* ============================================
+           RESPONSIVE DESIGN - MEDIA QUERIES
+           ============================================ */
+
+        /* Mobile Portrait (320px - 480px) */
+        @media only screen and (max-width: 480px) {
+            #message {
+                font-size: 14px;
+                padding: 10px 15px;
+                top: 10px;
+            }
+
+            #introText {
+                font-size: 18px;
+                padding: 15px;
+                max-width: 95%;
+            }
+
+            #countdown {
+                font-size: 80px;
+            }
+
+            #startButton {
+                font-size: 18px;
+                padding: 15px 35px;
+            }
+
+            .wish-text.layer-1 {
+                font-size: 16px;
+            }
+
+            .wish-text.layer-2 {
+                font-size: 14px;
+            }
+
+            .wish-text.layer-3 {
+                font-size: 12px;
+            }
+
+            .wish-text.layer-4 {
+                font-size: 10px;
+            }
+
+            .wish-text.layer-5 {
+                font-size: 8px;
+            }
+
+            #greetingCard {
+                width: 95%;
+                padding: 25px 20px;
+            }
+
+            #greetingCard h1 {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+
+            #greetingCard p {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            #greetingCard .decoration {
+                font-size: 28px;
+                margin: 15px 0;
+            }
+
+            #greetingCard .signature {
+                font-size: 16px;
+                margin-top: 20px;
+            }
+
+            #closeCard {
+                width: 30px;
+                height: 30px;
+                font-size: 18px;
+                line-height: 30px;
+            }
+
+            .heart {
+                font-size: 20px;
+            }
+        }
+
+        /* Mobile Landscape & Small Tablets (481px - 767px) */
+        @media only screen and (min-width: 481px) and (max-width: 767px) {
+            #message {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+
+            #introText {
+                font-size: 20px;
+                padding: 18px;
+            }
+
+            #countdown {
+                font-size: 100px;
+            }
+
+            #startButton {
+                font-size: 20px;
+                padding: 18px 40px;
+            }
+
+            .wish-text.layer-1 {
+                font-size: 18px;
+            }
+
+            .wish-text.layer-2 {
+                font-size: 15px;
+            }
+
+            .wish-text.layer-3 {
+                font-size: 13px;
+            }
+
+            .wish-text.layer-4 {
+                font-size: 11px;
+            }
+
+            .wish-text.layer-5 {
+                font-size: 9px;
+            }
+
+            #greetingCard {
+                width: 90%;
+                padding: 30px 25px;
+            }
+
+            #greetingCard h1 {
+                font-size: 26px;
+            }
+
+            #greetingCard p {
+                font-size: 16px;
+            }
+
+            #greetingCard .decoration {
+                font-size: 32px;
+            }
+
+            #greetingCard .signature {
+                font-size: 18px;
+            }
+        }
+
+        /* Tablets (768px - 1024px) */
+        @media only screen and (min-width: 768px) and (max-width: 1024px) {
+            #countdown {
+                font-size: 110px;
+            }
+
+            .wish-text.layer-1 {
+                font-size: 20px;
+            }
+
+            .wish-text.layer-2 {
+                font-size: 17px;
+            }
+
+            .wish-text.layer-3 {
+                font-size: 14px;
+            }
+
+            .wish-text.layer-4 {
+                font-size: 11px;
+            }
+
+            .wish-text.layer-5 {
+                font-size: 9px;
+            }
+
+            #greetingCard {
+                width: 85%;
+                max-width: 550px;
+            }
+
+            #greetingCard h1 {
+                font-size: 28px;
+            }
+
+            #greetingCard p {
+                font-size: 17px;
+            }
+        }
+
+        /* Large Desktop (1440px+) */
+        @media only screen and (min-width: 1440px) {
+            #message {
+                font-size: 20px;
+                padding: 18px 35px;
+            }
+
+            #introText {
+                font-size: 28px;
+            }
+
+            #countdown {
+                font-size: 140px;
+            }
+
+            .wish-text.layer-1 {
+                font-size: 24px;
+            }
+
+            .wish-text.layer-2 {
+                font-size: 20px;
+            }
+
+            .wish-text.layer-3 {
+                font-size: 17px;
+            }
+
+            .wish-text.layer-4 {
+                font-size: 14px;
+            }
+
+            .wish-text.layer-5 {
+                font-size: 12px;
+            }
+
+            #greetingCard {
+                max-width: 700px;
+                padding: 50px;
+            }
+
+            #greetingCard h1 {
+                font-size: 36px;
+            }
+
+            #greetingCard p {
+                font-size: 20px;
+            }
+
+            #greetingCard .signature {
+                font-size: 22px;
+            }
+        }
+
+        /* Landscape Orientation Fix for Mobile */
+        @media only screen and (max-height: 500px) and (orientation: landscape) {
+            #message {
+                font-size: 12px;
+                padding: 8px 12px;
+                top: 5px;
+            }
+
+            #introText {
+                font-size: 16px;
+                padding: 10px;
+                max-width: 90%;
+            }
+
+            #countdown {
+                font-size: 60px;
+            }
+
+            #greetingCard {
+                padding: 20px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            #greetingCard h1 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+
+            #greetingCard p {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            #greetingCard .decoration {
+                font-size: 24px;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div id="introText"></div>
+    <div id="countdown"></div>
+    <button id="startButton">🎆 Bắt Đầu 🎆</button>
+
+    <div id="greetingCard">
+        <button id="closeCard">×</button>
+        <div class="decoration">🎉✨🎊</div>
+        <h1 id="cardTitle">Chúc Mừng Năm Mới 2026!</h1>
+        <p id="cardContent">
+            <span class="typewriter"></span>
+        </p>
+        <div class="decoration">💝💖💕</div>
+        <div class="signature" id="cardSignature"></div>
+    </div>
+
+    <div id="customCursor">
+        <div class="cursor-line horizontal"></div>
+        <div class="cursor-line vertical"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const customCursor = document.getElementById('customCursor');
+        const startButton = document.getElementById('startButton');
+        const greetingCard = document.getElementById('greetingCard');
+        const closeCard = document.getElementById('closeCard');
+
+        // Audio Context for sound effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Sound effect functions
+        function playLaunchSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playExplosionSound() {
+            // Create a more complex explosion sound with multiple frequencies
+            const frequencies = [100, 150, 200, 250, 300];
+            const duration = 0.5;
+
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+
+                oscillator.type = 'sawtooth';
+                filter.type = 'lowpass';
+                filter.frequency.value = 2000;
+
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + duration);
+
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                const startTime = audioContext.currentTime + (index * 0.02);
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            });
+
+            // Add white noise for crackle effect
+            const bufferSize = audioContext.sampleRate * 0.5;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioContext.createBufferSource();
+            const noiseGain = audioContext.createGain();
+            const noiseFilter = audioContext.createBiquadFilter();
+
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 1000;
+
+            noise.buffer = buffer;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioContext.destination);
+
+            noiseGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+            noise.start(audioContext.currentTime);
+            noise.stop(audioContext.currentTime + 0.4);
+        }
+
+        function playWishSound() {
+            // Gentle chime sound for wishes
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playCardSound() {
+            // Magical sound for card appearance
+            const frequencies = [523, 659, 784, 1047]; // C, E, G, C (major chord)
+
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = freq;
+
+                const startTime = audioContext.currentTime + (index * 0.1);
+                gainNode.gain.setValueAtTime(0.15, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.8);
+
+                oscillator.start(startTime);
+                oscillator.stop(startTime + 0.8);
+            });
+        }
+
+        // Set canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Custom cursor movement
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = e.clientX - 15 + 'px';
+            customCursor.style.top = e.clientY - 15 + 'px';
+        });
+
+        // Stars array
+        const stars = [];
+        const numStars = 200;
+
+        // Star class
+        class Star {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 1.5 + 0.5;
+                this.opacity = Math.random();
+                this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+                this.increasing = Math.random() > 0.5;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+
+            update() {
+                // Twinkling effect
+                if (this.increasing) {
+                    this.opacity += this.twinkleSpeed;
+                    if (this.opacity >= 1) {
+                        this.increasing = false;
+                    }
+                } else {
+                    this.opacity -= this.twinkleSpeed;
+                    if (this.opacity <= 0.1) {
+                        this.increasing = true;
+                    }
+                }
+            }
+        }
+
+        // Initialize stars
+        for (let i = 0; i < numStars; i++) {
+            stars.push(new Star());
+        }
+
+        // Create heart on click/touch
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '❤️';
+            heart.style.left = x + 'px';
+            heart.style.top = y + 'px';
+
+            document.body.appendChild(heart);
+
+            // Remove heart after animation
+            setTimeout(() => {
+                heart.remove();
+            }, 3000);
+        }
+
+        // Mouse click event
+        canvas.addEventListener('click', (e) => {
+            createHeart(e.clientX, e.clientY);
+        });
+
+        // Touch event for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.touches) {
+                createHeart(touch.clientX, touch.clientY);
+            }
+        });
+
+        // Particle for firework trail
+        class TrailParticle {
+            constructor(x, y, vx, vy, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.color = color;
+                this.life = 1;
+                this.radius = 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.3; // gravity
+                this.life -= 0.02;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDone() {
+                return this.life <= 0;
+            }
+        }
+
+        // Rocket (firework before explosion)
+        class Rocket {
+            constructor(x, targetY, color, shape) {
+                this.x = x;
+                this.y = canvas.height;
+                this.targetY = targetY;
+                this.color = color;
+                this.shape = shape;
+                this.vy = -12; // Increased initial upward velocity for higher launch
+                this.trail = [];
+                this.exploded = false;
+
+                // Play launch sound
+                playLaunchSound();
+            }
+
+            update() {
+                if (!this.exploded) {
+                    this.y += this.vy;
+                    this.vy += 0.15; // gravity slows it down
+
+                    // Create trail
+                    if (Math.random() > 0.6) {
+                        this.trail.push(new TrailParticle(
+                            this.x + (Math.random() - 0.5) * 2,
+                            this.y + (Math.random() - 0.5) * 2,
+                            (Math.random() - 0.5) * 0.5,
+                            Math.random() * 1,
+                            this.color
+                        ));
+                    }
+
+                    // Check if reached target height
+                    if (this.y <= this.targetY || this.vy > 0) {
+                        this.exploded = true;
+                        playExplosionSound(); // Play explosion sound
+                        return new Explosion(this.x, this.y, this.color, this.shape);
+                    }
+                }
+
+                // Update trail
+                this.trail = this.trail.filter(p => !p.isDone());
+                this.trail.forEach(p => p.update());
+
+                return null;
+            }
+
+            draw() {
+                // Draw rocket
+                if (!this.exploded) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+
+                    // Add glow to rocket
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Draw trail
+                this.trail.forEach(p => p.draw());
+            }
+
+            isDone() {
+                return this.exploded && this.trail.length === 0;
+            }
+        }
+
+        // Explosion particle
+        class ExplosionParticle {
+            constructor(x, y, angle, speed, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.color = color;
+                this.life = 1.5; // Increased life from 1 to 1.5
+                this.radius = Math.random() * 2 + 1;
+                this.gravity = 0.03; // Reduced gravity from 0.08 to 0.03 (much slower fall)
+                this.sparks = []; // For trailing sparks effect
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity; // Much lighter gravity
+                this.vx *= 0.995; // Less air resistance (was 0.98)
+                this.life -= 0.003; // Much slower fade (was 0.006)
+
+                // Create trailing sparks randomly
+                if (this.life > 0.5 && Math.random() > 0.85) {
+                    this.sparks.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: this.vx * 0.3 + (Math.random() - 0.5) * 0.5,
+                        vy: this.vy * 0.3 + Math.random() * 0.5,
+                        life: 0.8, // Longer spark life
+                        color: this.color
+                    });
+                }
+
+                // Update sparks
+                this.sparks.forEach(spark => {
+                    spark.x += spark.vx;
+                    spark.y += spark.vy;
+                    spark.vy += 0.05; // Less gravity on sparks
+                    spark.life -= 0.015; // Slower fade
+                });
+
+                // Remove dead sparks
+                this.sparks = this.sparks.filter(s => s.life > 0);
+            }
+
+            draw() {
+                // Draw main particle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = Math.min(this.life, 1); // Cap at 1 for opacity
+                ctx.fill();
+
+                // Add glow effect
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.globalAlpha = 1;
+
+                // Draw trailing sparks
+                this.sparks.forEach(spark => {
+                    ctx.beginPath();
+                    ctx.arc(spark.x, spark.y, 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = spark.color;
+                    ctx.globalAlpha = spark.life * 0.7;
+                    ctx.fill();
+                });
+
+                ctx.globalAlpha = 1;
+            }
+
+            isDone() {
+                return this.life <= 0;
+            }
+        }
+
+        // Explosion class
+        class Explosion {
+            constructor(x, y, color, shape) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.shape = shape;
+                this.particles = [];
+                this.createExplosion();
+            }
+
+            createExplosion() {
+                const colors = this.generateColors(this.color);
+
+                switch (this.shape) {
+                    case 'circle':
+                        this.createCircle(colors);
+                        break;
+                    case 'ring':
+                        this.createRing(colors);
+                        break;
+                    case 'heart':
+                        this.createHeart(colors);
+                        break;
+                    case 'star':
+                        this.createStar(colors);
+                        break;
+                    case 'willow':
+                        this.createWillow(colors);
+                        break;
+                    case 'palm':
+                        this.createPalm(colors);
+                        break;
+                    default:
+                        this.createCircle(colors);
+                }
+            }
+
+            generateColors(baseColor) {
+                // Generate complementary colors
+                return [baseColor, this.lightenColor(baseColor), this.darkenColor(baseColor)];
+            }
+
+            lightenColor(color) {
+                // Simple color lightening
+                return color;
+            }
+
+            darkenColor(color) {
+                return color;
+            }
+
+            createCircle(colors) {
+                const particleCount = 120;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const speed = Math.random() * 4 + 3;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    this.particles.push(new ExplosionParticle(this.x, this.y, angle, speed, color));
+                }
+            }
+
+            createRing(colors) {
+                const particleCount = 100;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const speed = 5 + Math.random() * 0.5;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    this.particles.push(new ExplosionParticle(this.x, this.y, angle, speed, color));
+                }
+            }
+
+            createHeart(colors) {
+                const particleCount = 100;
+                for (let i = 0; i < particleCount; i++) {
+                    const t = (i / particleCount) * Math.PI * 2;
+                    const x = 16 * Math.pow(Math.sin(t), 3);
+                    const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                    const angle = Math.atan2(y, x);
+                    const speed = 3;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    this.particles.push(new ExplosionParticle(this.x, this.y, angle, speed, color));
+                }
+            }
+
+            createStar(colors) {
+                const points = 5;
+                const particleCount = 120;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const pointAngle = Math.floor((angle / (Math.PI * 2)) * points * 2);
+                    const speed = (pointAngle % 2 === 0) ? 6 : 3;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    this.particles.push(new ExplosionParticle(this.x, this.y, angle, speed, color));
+                }
+            }
+
+            createWillow(colors) {
+                const particleCount = 150;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const speed = Math.random() * 2 + 2;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const particle = new ExplosionParticle(this.x, this.y, angle, speed, color);
+                    particle.gravity = 0.15; // More gravity for willow effect
+                    this.particles.push(particle);
+                }
+            }
+
+            createPalm(colors) {
+                const branches = 8;
+                const particlesPerBranch = 15;
+                for (let b = 0; b < branches; b++) {
+                    const branchAngle = (Math.PI * 2 * b) / branches;
+                    for (let p = 0; p < particlesPerBranch; p++) {
+                        const angle = branchAngle + (Math.random() - 0.5) * 0.3;
+                        const speed = 3 + p * 0.3;
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        this.particles.push(new ExplosionParticle(this.x, this.y, angle, speed, color));
+                    }
+                }
+            }
+
+            update() {
+                this.particles = this.particles.filter(p => !p.isDone());
+                this.particles.forEach(p => p.update());
+            }
+
+            draw() {
+                this.particles.forEach(p => p.draw());
+            }
+
+            isDone() {
+                return this.particles.length === 0;
+            }
+        }
+
+        let rockets = [];
+        let explosions = [];
+        let isFireworkActive = false;
+
+        function launchFirework() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8', '#00d2d3', '#ff9ff3', '#feca57'];
+            const shapes = ['circle', 'ring', 'heart', 'star', 'willow', 'palm'];
+
+            // Launch position: center-bottom area
+            const xVariation = canvas.width * 0.3; // 30% variation from center
+            const x = canvas.width / 2 + (Math.random() - 0.5) * xVariation;
+            const targetY = canvas.height * 0.1 + Math.random() * canvas.height * 0.25; // Explode higher: 10-35% from top
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+
+            rockets.push(new Rocket(x, targetY, color, shape));
+        }
+
+        // Wishes array - thêm nhiều lời chúc và emoji trái tim
+        const wishes = [
+            "💕 Chúc năm mới hạnh phúc! 💕",
+            "💖 Chúc tình yêu mãi mãi! 💖",
+            "✨ Chúc mọi điều tốt đẹp! ✨",
+            "🌟 Chúc thành công rực rỡ!",
+            "💝 Chúc em luôn vui vẻ!",
+            "🎉 Happy New Year 🎉",
+            "💫 Chúc ước mơ thành hiện thực!",
+            "🌸 Chúc em luôn xinh đẹp! 🌸",
+            "💗 Chúc một năm tràn đầy niềm vui!",
+            "💕 Chúc tình yêu bền chặt!",
+            "🌈 Chúc cuộc sống rực rỡ!",
+            "🎁 Chúc em nhận được nhiều quà!",
+            "⭐ Chúc sự nghiệp thăng tiến!",
+            "💓 Chúc trái tim luôn ấm áp!",
+            "✨ Chúc mỗi ngày đều tuyệt vời!",
+            "🌺 Chúc em luôn tươi trẻ!",
+            "💝 Chúc năm mới vạn sự như ý!",
+            "💗 Chúc chúng mình mãi bên nhau!",
+            "🌙 Chúc đêm nào cũng ngủ ngon!",
+            "☀️ Chúc ngày nào cũng rạng rỡ!",
+            "2026 năm thật thành công! 💖",
+            "Năm mới may mắn gặp nhiều điều tốt 💕",
+            "Anh yêu Thu Thủy rất nhiều 🎊",
+            "Chúc anh năm mới hạnh phúc 💝",
+            "2026 mãi yêu em! 💗",
+            "Năm mới vui vẻ! 💖"
+        ];
+
+        function showWishText() {
+            const wish = wishes[Math.floor(Math.random() * wishes.length)];
+            const wishElement = document.createElement('div');
+            wishElement.className = 'wish-text';
+
+            // Random 3D layer (1-5) for depth effect - 5 layers now!
+            const layer = Math.floor(Math.random() * 5) + 1;
+            wishElement.classList.add(`layer-${layer}`);
+
+            wishElement.textContent = wish;
+
+            // Random horizontal position (left position)
+            const x = Math.random() * (window.innerWidth - 300) + 10; // Leave margin for text
+
+            wishElement.style.left = x + 'px';
+            wishElement.style.bottom = '-50px'; // Start from bottom
+
+            // Set z-index based on layer (closer = higher z-index)
+            wishElement.style.zIndex = 50 + (6 - layer); // layer 1 = z-index 55, layer 5 = z-index 51
+
+            document.body.appendChild(wishElement);
+
+            // Remove after animation completes (different duration per layer)
+            const durations = [5000, 6000, 7000, 8000, 9000];
+            setTimeout(() => {
+                wishElement.remove();
+            }, durations[layer - 1]);
+        }
+
+        function showMultipleWishes() {
+            // Only 1 wish at a time now
+            playWishSound();
+            showWishText();
+        }
+
+        // Typewriter effect for greeting card - wrap words to prevent break
+        function typeWriter(element, text, speed = 50) {
+            element.innerHTML = '';
+            const lines = text.split('\n');
+            let lineIndex = 0;
+            let wordIndex = 0;
+            let charIndex = 0;
+            let currentWordSpan = null;
+
+            function typeNextChar() {
+                if (lineIndex >= lines.length) {
+                    return;
+                }
+
+                const currentLine = lines[lineIndex];
+                const words = currentLine.split(' ');
+
+                // Move to next line if finished current line
+                if (wordIndex >= words.length) {
+                    lineIndex++;
+                    wordIndex = 0;
+                    charIndex = 0;
+
+                    if (lineIndex < lines.length) {
+                        element.appendChild(document.createElement('br'));
+                        setTimeout(typeNextChar, speed);
+                    }
+                    return;
+                }
+
+                const currentWord = words[wordIndex];
+
+                // Create new word wrapper if starting new word
+                if (charIndex === 0) {
+                    currentWordSpan = document.createElement('span');
+                    currentWordSpan.style.display = 'inline-block';
+                    currentWordSpan.style.whiteSpace = 'nowrap';
+                    element.appendChild(currentWordSpan);
+                }
+
+                // Type current character
+                if (charIndex < currentWord.length) {
+                    const char = currentWord.charAt(charIndex);
+                    const span = document.createElement('span');
+                    span.className = 'typewriter-char';
+                    span.textContent = char;
+                    currentWordSpan.appendChild(span);
+                    charIndex++;
+                    setTimeout(typeNextChar, speed);
+                } else {
+                    // Finished current word, add space and move to next word
+                    charIndex = 0;
+                    wordIndex++;
+
+                    if (wordIndex < words.length) {
+                        // Add space between words
+                        const space = document.createTextNode(' ');
+                        element.appendChild(space);
+                    }
+
+                    setTimeout(typeNextChar, speed);
+                }
+            }
+
+            typeNextChar();
+        }
+
+        // Typewriter for intro text - wrap words to prevent break
+        function typeIntro(element, text, speed = 80) {
+            element.innerHTML = '';
+            const words = text.split(' ');
+            let wordIndex = 0;
+            let charIndex = 0;
+            let currentWordSpan = null;
+
+            return new Promise((resolve) => {
+                function typeNextChar() {
+                    if (wordIndex >= words.length) {
+                        resolve();
+                        return;
+                    }
+
+                    const currentWord = words[wordIndex];
+
+                    // Create new word wrapper if starting new word
+                    if (charIndex === 0) {
+                        currentWordSpan = document.createElement('span');
+                        currentWordSpan.style.display = 'inline-block';
+                        currentWordSpan.style.whiteSpace = 'nowrap';
+                        element.appendChild(currentWordSpan);
+                    }
+
+                    // Type current character
+                    if (charIndex < currentWord.length) {
+                        const char = currentWord.charAt(charIndex);
+                        const span = document.createElement('span');
+                        span.className = 'intro-char';
+                        span.textContent = char;
+                        currentWordSpan.appendChild(span);
+                        charIndex++;
+                        setTimeout(typeNextChar, speed);
+                    } else {
+                        // Finished current word, add space and move to next word
+                        charIndex = 0;
+                        wordIndex++;
+
+                        if (wordIndex < words.length) {
+                            // Add space between words
+                            const space = document.createTextNode(' ');
+                            element.appendChild(space);
+                        }
+
+                        setTimeout(typeNextChar, speed);
+                    }
+                }
+
+                typeNextChar();
+            });
+        }
+
+        // Start intro text animation on page load
+        window.addEventListener('load', () => {
+            const introText = document.getElementById('introText');
+            const countdownElement = document.getElementById('countdown');
+            const message = "Thu Thủy yêu dấu, năm nay anh chưa thể cùng em ngắm pháo hoa được nên anh làm một bầu trời pháo hoa tặng em nhé....";
+
+            // Start typing intro
+            typeIntro(introText, message, 80).then(() => {
+                // After intro finishes, wait 2 seconds then start countdown
+                setTimeout(() => {
+                    introText.style.transition = 'opacity 1s';
+                    introText.style.opacity = '0';
+
+                    setTimeout(() => {
+                        introText.style.display = 'none';
+
+                        // Start countdown 3, 2, 1
+                        startCountdown(countdownElement);
+                    }, 1000);
+                }, 2000);
+            });
+        });
+
+        // Countdown function
+        function startCountdown(element) {
+            let count = 3;
+
+            function showNumber() {
+                if (count > 0) {
+                    element.textContent = count;
+                    element.classList.add('show');
+
+                    // Play countdown sound
+                    playCountdownSound();
+
+                    setTimeout(() => {
+                        element.classList.remove('show');
+                        count--;
+
+                        setTimeout(() => {
+                            showNumber();
+                        }, 300);
+                    }, 700);
+                } else {
+                    // Show "GO!" or emoji
+                    element.textContent = '🎆';
+                    element.classList.add('show');
+                    playExplosionSound();
+
+                    setTimeout(() => {
+                        element.classList.remove('show');
+
+                        setTimeout(() => {
+                            element.style.display = 'none';
+                            // Start fireworks automatically!
+                            startFireworks();
+                        }, 300);
+                    }, 700);
+                }
+            }
+
+            showNumber();
+        }
+
+        // Countdown sound
+        function playCountdownSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Start fireworks (extracted from button click)
+        function startFireworks() {
+            // Resume audio context
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            // Phase 1: Fireworks for 30-45 seconds (randomly choose duration)
+            const fireworkDuration = 30000 + Math.random() * 15000; // 30-45 seconds
+            isFireworkActive = true;
+
+            const fireworkInterval = setInterval(() => {
+                launchFirework();
+                // Sometimes launch multiple fireworks
+                if (Math.random() > 0.7) {
+                    setTimeout(() => launchFirework(), 200);
+                }
+            }, 800);
+
+            setTimeout(() => {
+                clearInterval(fireworkInterval);
+                isFireworkActive = false;
+
+                // Wait for remaining fireworks to finish
+                setTimeout(() => {
+                    rockets = [];
+                    explosions = [];
+
+                    // Phase 2: Show wishes scattered all over screen
+                    const wishInterval = setInterval(() => {
+                        showMultipleWishes(); // Show 1 wish at a time
+                    }, 400); // Every 0.4 seconds - faster since only 1 wish now
+
+                    setTimeout(() => {
+                        clearInterval(wishInterval);
+
+                        // Phase 3: Show greeting card after 2 seconds (let wishes fade)
+                        setTimeout(() => {
+                            playCardSound(); // Play magical sound
+                            greetingCard.classList.add('show');
+
+                            // Start typewriter effect after card appears
+                            setTimeout(() => {
+                                const content = "Em yêu của anh,\n\nNăm mới đến rồi, anh chúc em luôn tràn đầy niềm vui và hạnh phúc.\nChúc em thành công trong sự nghiệp, mọi ước mơ đều thành hiện thực.\nChúc sức khỏe luôn dồi dào, nụ cười luôn tươi tắn trên môi.\nVà quan trọng nhất, chúc tình yêu của chúng mình ngày càng bền chặt,\nvượt qua mọi sóng gió để đến bến bờ hạnh phúc.\n\nAnh yêu em nhiều lắm! ❤️";
+                                const signature = "- Việt của Thu Thủy -";
+
+                                const contentElement = document.querySelector('#cardContent .typewriter');
+                                const signatureElement = document.getElementById('cardSignature');
+
+                                // Type content first
+                                typeWriter(contentElement, content, 40);
+
+                                // Type signature after content finishes
+                                setTimeout(() => {
+                                    typeWriter(signatureElement, signature, 60);
+                                }, content.length * 40 + 500);
+                            }, 500);
+                        }, 2000);
+                    }, 20000); // 20 seconds of wishes
+                }, 3000);
+            }, fireworkDuration);
+        }
+
+        // Start button click (kept for reset functionality)
+        startButton.addEventListener('click', () => {
+            startFireworks();
+        });
+
+        // Close card button
+        closeCard.addEventListener('click', () => {
+            greetingCard.classList.remove('show');
+            setTimeout(() => {
+                startButton.style.display = 'block';
+            }, 500);
+        });
+
+        // Animation loop
+        function animate() {
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a1929');
+            gradient.addColorStop(0.5, '#1a3a52');
+            gradient.addColorStop(1, '#2d5f7a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw stars
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            // Update and draw rockets
+            rockets.forEach((rocket, index) => {
+                const explosion = rocket.update();
+                if (explosion) {
+                    explosions.push(explosion);
+                }
+                rocket.draw();
+                if (rocket.isDone()) {
+                    rockets.splice(index, 1);
+                }
+            });
+
+            // Update and draw explosions
+            explosions.forEach((explosion, index) => {
+                explosion.update();
+                explosion.draw();
+                if (explosion.isDone()) {
+                    explosions.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+
+        // Hide custom cursor on mobile
+        if ('ontouchstart' in window) {
+            customCursor.style.display = 'none';
+            document.body.style.cursor = 'auto';
+        }
+
+        // Prevent zoom on double tap for mobile
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        // Prevent pinch zoom
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+
+        // Adjust canvas on orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

@@ -253,7 +253,7 @@
             }
         };
 
-        // --- HỆ THỐNG CHỮ BAY ĐÃ SỬA LỖI ĐỀU & TRÀN MÀN HÌNH ---
+
         const sky = document.getElementById('sky');
         const wishes = [
             "Chúc Thu Thủy luôn xinh đẹp", "Mãi yêu em", "Hạnh phúc", "Chúc Thu Thủy nhiều xiền", "Chúc đôi ta mãi có nhau",
@@ -269,7 +269,6 @@
             wish.className = 'floating-wish';
             wish.innerText = wishes[Math.floor(Math.random() * wishes.length)];
 
-            // 1. CHỐNG TRÀN LỀ: Giới hạn vùng xuất hiện từ 5% đến 85% để chữ không bị cắt
             const randomLeft = Math.random() * 80 + 5;
             wish.style.left = randomLeft + "vw";
 
